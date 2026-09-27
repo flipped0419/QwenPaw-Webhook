@@ -299,7 +299,7 @@ class WebhookChannel(BaseChannel):
                 default_timeout=self.timeout,
             )
         except Exception:
-            logger.exception("webhok channel delivery failed for target=%s", target[:64])
+            logger.exception("webhook channel delivery failed for target=%s", target[:64])
 
     async def health_check(self) -> Dict[str, Any]:
         if not self.enabled:
