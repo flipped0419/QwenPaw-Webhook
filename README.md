@@ -115,7 +115,7 @@ Webhook Channel 会直接丢弃，不发 HTTP 请求；这正好可以用于“�
 
 ## 4. 入站 Webhook
 
-先在 Webhook Channel 中开媯 `Enable inbound webhook`，并设置一个足够长的 `Inbound secret`；也可以使用环境变量：
+先在 Webhook Channel 中开启 `Enable inbound webhook`，并设置一个足够长的 `Inbound secret`；也可以使用环境变量：
 
 ```bash
 QWENPAW_WEBHOOK_INBOUND_SECRET=replace-with-a-long-random-secret
@@ -181,7 +181,7 @@ GET /api/webhook/health
 - 默认仅允许管理员预配置的 target alias；模型不能随意访问 URL。
 - 不在日志中记录目标 URL 或 Header。
 - 入站 Webhook 默认关闭。
-- 入站启用吞必须通过共享密钥认证。
+- 入站启用后必须通过共享密钥认证。
 - 请求体有限制，默认 256 KiB。
 - 不跟随 HTTP 30x 重定向。
 - URL 中禁止 `user:password@host` 形式的凭据。
