@@ -1,0 +1,23 @@
+{
+  "notify": {
+    "url": "${NOTIFY_WEBHOOK_URL}",
+    "method": "POST",
+    "format": "json",
+    "headers": {
+      "Authorization": "Bearer ${NOTIFY_WEBHOOK_TOKEN}"
+    },
+    "payload": {
+      "title": "{{title}}",
+      "content": "{{content}}",
+      "data": "{{data}}"
+    },
+    "timeout": 15,
+    "verify_tls": true
+  },
+  "plain-text": {
+    "url": "${PLAIN_WEBHOOK_URL}",
+    "method": "POST",
+    "format": "text",
+    "payload": "{{content}}"
+  }
+}
