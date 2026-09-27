@@ -1,0 +1,58 @@
+{
+  "id": "qwenpaw-webhook",
+  "name": "QwenPaw Webhook",
+  "version": "0.1.0",
+  "type": "channel",
+  "description": "Generic webhook integration for QwenPaw: inbound HTTP trigger, send_webhook agent tool, and outbound Webhook channel.",
+  "description_i18n": {
+    "zh-CN": "QwenPaw 通用 Webhook 插件：入站 HTTP 触发、send_webhook 工具与出站 Webhook 频道。",
+    "en-US": "Generic webhook integration for QwenPaw: inbound HTTP trigger, send_webhook tool, and outbound Webhook channel."
+  },
+  "author": "flipped0419",
+  "entry": {
+    "backend": "plugin.py"
+  },
+  "dependencies": [],
+  "qwenpaw_version": {
+    "min": "2.2.2b4",
+    "max": "2.3.0"
+  },
+  "meta": {
+    "tool_name": "send_webhook",
+    "tools": [
+      {
+        "name": "send_webhook",
+        "description": "Send a notification to a trusted preconfigured webhook target alias.",
+        "icon": "🔗",
+        "requires_config": false,
+        "config_fields": [
+          {
+            "name": "targets_file",
+            "label": "Targets file",
+            "type": "text",
+            "required": false,
+            "placeholder": "/path/to/webhook_targets.json",
+            "help": "Optional. Defaults to QWENPAW_WEBHOOK_TARGETS_FILE or QwenPaw's secret directory."
+          },
+          {
+            "name": "allow_raw_url",
+            "label": "Allow raw URL",
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "help": "Recommended off. When off, the model can only use administrator-defined target aliases."
+          },
+          {
+            "name": "timeout",
+            "label": "Request timeout (seconds)",
+            "type": "number",
+            "required": false,
+            "default": 15,
+            "min": 1,
+            "max": 120
+          }
+        ]
+      }
+    ]
+  }
+}
