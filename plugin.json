@@ -1,7 +1,7 @@
 {
   "id": "qwenpaw-webhook",
   "name": "QwenPaw Webhook",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "channel",
   "description": "Generic webhook integration for QwenPaw: inbound HTTP trigger, send_webhook agent tool, and outbound Webhook channel.",
   "description_i18n": {
@@ -14,8 +14,8 @@
   },
   "dependencies": [],
   "qwenpaw_version": {
-    "min": "2.2.2b4",
-    "max": "2.3.0"
+    "min": "2.2.0",
+    "max": "3.0.0"
   },
   "meta": {
     "tool_name": "send_webhook",
