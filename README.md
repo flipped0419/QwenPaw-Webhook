@@ -1,6 +1,6 @@
-# QwenPaw Webhook 0.1.0
+# QwenPaw Webhook 0.1.1
 
-面向 QwenPaw 2.2.2b4 的三合一 Webhook 插件：
+面向 QwenPaw 2.2.0+ 的三合一 Webhook 插件：
 
 1. **入站 Webhook**：外部服务 `POST` 到 QwenPaw，触发 Agent。
 2. **`send_webhook` Tool**：Agent 按需主动调用预配置 Webhook。
@@ -13,7 +13,7 @@ qwenpaw plugin install /path/to/qwenpaw-webhook-v0.1.0.zip
 qwenpaw plugin list
 ```
 
-插件按当前 QwenPaw `2.2.2b4` 插件 API 编写，声明兼容范围 `>=2.2.2b4,<2.3.0`。
+插件按当前 QwenPaw `2.2.2b4` 插件 API 编写，声明兼容范围 `>=2.2.0,<3.0.0`。
 
 ## 1. 配置目标
 
