@@ -1,4 +1,4 @@
-# QwenPaw Webhook 0.1.1
+# QwenPaw Webhook 0.2.0
 
 面向 QwenPaw 2.2.0+ 的三合一 Webhook 插件：
 
@@ -190,3 +190,25 @@ GET /api/webhook/health
 ## 0.1.0 当前边界
 
 第一版已经实现三个核心能力，但暂未加入：HMAC 时间戳签名验证、失败重试队列、Webhook 投递历史 UI、附件二进制上传。这些可以在实际跑通后按需要继续加。
+
+
+## 前端配置页
+
+v0.2.0 起，插件通过 QwenPaw 前端扩展 API 注册一个 **Webhook** 管理页面。可以直接在 Console 中：
+
+- 新增、编辑、删除推送目标
+- 配置 URL、Method、Format、Headers、Payload、超时和 TLS 校验
+- 一键发送测试消息
+- 查看实际保存位置
+
+配置由后端写入 QwenPaw Secret 目录下的 `webhook_targets.json`，不会写入插件源码目录。URL 和 Header 中仍可使用 `${ENV_NAME}` 引用运行时环境变量。
+
+对应管理 API：
+
+```text
+GET    /api/webhook/targets
+PUT    /api/webhook/targets/{alias}
+DELETE /api/webhook/targets/{alias}
+POST   /api/webhook/targets/{alias}/test
+```
+
