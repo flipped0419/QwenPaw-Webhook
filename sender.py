@@ -148,7 +148,18 @@ def validate_target_config(cfg: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(cfg, Mapping):
         raise WebhookConfigError("Target config must be a JSON object")
     value = dict(cfg)
-    _validate_url(str(value.get("url", "")))
+    raw_url = str(value.get("url", "") or "").strip()
+    if not raw_url:
+        raise WebhookConfigError("Webhook URL is empty")
+    # Allow ${ENV_NAME} placeholders to be stored even when the variable is
+    # not present in this process yet. Runtime delivery validates the expanded
+    # URL again before any network request is made.
+    if "${" not in raw_url:
+        _validate_url(raw_url)
+    else:
+        expanded_url = _expand_env_string(raw_url).strip()
+        if expanded_url:
+            _validate_url(expanded_url)
     method = str(value.get("method", "POST") or "POST").strip().upper()
     if method not in {"POST", "PUT", "PATCH"}:
         raise WebhookConfigError("Webhook method must be POST, PUT, or PATCH")
