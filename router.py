@@ -11,6 +11,14 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from .runtime import instance_status, select_instance
+from .sender import (
+    WebhookConfigError,
+    load_file_targets,
+    save_file_targets,
+    send_webhook_request,
+    validate_target_alias,
+    validate_target_config,
+)
 
 router = APIRouter()
 _SOURCE_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
@@ -33,6 +41,87 @@ def _pick_text(payload: dict[str, Any]) -> str:
             return value.strip()
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
+
+
+
+
+@router.get("/targets")
+async def list_webhook_targets() -> dict:
+    """List editable file-backed webhook targets."""
+    try:
+        path, targets = load_file_targets()
+    except WebhookConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {
+        "path": str(path),
+        "targets": targets,
+    }
+
+
+@router.put("/targets/{alias}")
+async def put_webhook_target(alias: str, request: Request) -> dict:
+    """Create or replace one file-backed webhook target."""
+    try:
+        name = validate_target_alias(alias)
+        body = await request.json()
+        if not isinstance(body, dict):
+            raise WebhookConfigError("Target config must be a JSON object")
+        config = validate_target_config(body)
+        path, targets = load_file_targets()
+        targets[name] = config
+        save_file_targets(targets, str(path))
+    except (json.JSONDecodeError, WebhookConfigError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"ok": True, "alias": name}
+
+
+@router.delete("/targets/{alias}")
+async def delete_webhook_target(alias: str) -> dict:
+    """Delete one file-backed webhook target."""
+    try:
+        name = validate_target_alias(alias)
+        path, targets = load_file_targets()
+        if name not in targets:
+            raise HTTPException(status_code=404, detail="Webhook target not found")
+        targets.pop(name, None)
+        save_file_targets(targets, str(path))
+    except WebhookConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"ok": True, "alias": name}
+
+
+@router.post("/targets/{alias}/test")
+async def test_webhook_target(alias: str, request: Request) -> dict:
+    """Send a test message through one configured target."""
+    try:
+        name = validate_target_alias(alias)
+        try:
+            body = await request.json()
+        except json.JSONDecodeError:
+            body = {}
+        if not isinstance(body, dict):
+            body = {}
+        title = str(body.get("title") or "QwenPaw Webhook test")
+        content = str(body.get("content") or "QwenPaw Webhook test message")
+        data = body.get("data")
+        if not isinstance(data, dict):
+            data = {"test": True}
+        result = await send_webhook_request(
+            name,
+            title=title,
+            content=content,
+            data=data,
+        )
+    except WebhookConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return {
+        "ok": True,
+        "target": result.target,
+        "status_code": result.status_code,
+        "response_preview": result.response_preview,
+    }
 
 @router.get("/health")
 async def webhook_health() -> dict:
