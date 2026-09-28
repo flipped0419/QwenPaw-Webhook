@@ -1,4 +1,4 @@
-# QwenPaw Webhook 0.2.2
+# QwenPaw Webhook 0.2.3
 
 面向 QwenPaw 2.2.0+ 的三合一 Webhook 插件：
 
@@ -194,7 +194,7 @@ GET /api/webhook/health
 
 ## 前端配置页
 
-v0.2.2 起，插件通过 QwenPaw 前端扩展 API 注册一个 **Webhook** 管理页面。可以直接在 Console 中：
+v0.2.3 起，插件通过 QwenPaw 前端扩展 API 注册一个 **Webhook** 管理页面。可以直接在 Console 中：
 
 - 新增、编辑、删除推送目标
 - 配置 URL、Method、Format、Headers、Payload、超时和 TLS 校验
@@ -212,3 +212,8 @@ DELETE /api/webhook/targets/{alias}
 POST   /api/webhook/targets/{alias}/test
 ```
 
+
+
+### v0.2.3
+
+修复前端管理页通过 `window.QwenPaw.host.fetch` 请求时重复添加 `/api` 前缀，导致新增/编辑/删除/测试目标出现 `Method Not Allowed` 的问题。
