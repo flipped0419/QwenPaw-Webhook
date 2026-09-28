@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 _ENV_RE = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 _DEFAULT_TIMEOUT = 15.0
 _MAX_CONTENT_CHARS = 64_000
+_TARGET_ALIAS_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
 
 
 class WebhookConfigError(ValueError):
@@ -66,6 +67,115 @@ def _load_json_object(raw: str, source: str) -> dict[str, Any]:
     if not isinstance(parsed, dict):
         raise WebhookConfigError(f"{source} must contain a JSON object")
     return parsed
+
+
+def validate_target_alias(alias: str) -> str:
+    """Validate and normalize a persisted webhook target alias."""
+    value = (alias or "").strip()
+    if not _TARGET_ALIAS_RE.fullmatch(value):
+        raise WebhookConfigError(
+            "Target alias must be 1-64 characters using letters, numbers, '.', '_' or '-'"
+        )
+    return value
+
+
+def load_file_targets(targets_file: str = "") -> tuple[Path, dict[str, dict[str, Any]]]:
+    """Load only the editable file-backed target definitions.
+
+    Environment-provided targets are intentionally excluded because the
+    management UI must never rewrite QWENPAW_WEBHOOK_TARGETS_JSON.
+    """
+    path = Path(targets_file).expanduser() if targets_file else default_targets_file()
+    if not path.exists():
+        return path, {}
+    if not path.is_file():
+        raise WebhookConfigError(f"Targets path is not a file: {path}")
+    try:
+        raw = _load_json_object(path.read_text("utf-8"), str(path))
+    except OSError as exc:
+        raise WebhookConfigError(f"Cannot read targets file: {exc}") from exc
+
+    result: dict[str, dict[str, Any]] = {}
+    for alias, cfg in raw.items():
+        name = validate_target_alias(str(alias))
+        if isinstance(cfg, str):
+            cfg = {"url": cfg}
+        if not isinstance(cfg, dict):
+            raise WebhookConfigError(f"Target '{name}' must be an object or URL string")
+        result[name] = dict(cfg)
+    return path, result
+
+
+def save_file_targets(
+    targets: Mapping[str, Mapping[str, Any]],
+    targets_file: str = "",
+) -> Path:
+    """Atomically save editable webhook targets with restrictive permissions."""
+    path = Path(targets_file).expanduser() if targets_file else default_targets_file()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    normalized: dict[str, dict[str, Any]] = {}
+    for alias, cfg in targets.items():
+        name = validate_target_alias(str(alias))
+        if not isinstance(cfg, Mapping):
+            raise WebhookConfigError(f"Target '{name}' must be an object")
+        normalized[name] = dict(cfg)
+
+    payload = json.dumps(normalized, ensure_ascii=False, indent=2) + "\n"
+    tmp = path.with_name(path.name + ".tmp")
+    try:
+        tmp.write_text(payload, encoding="utf-8")
+        try:
+            os.chmod(tmp, 0o600)
+        except OSError:
+            pass
+        os.replace(tmp, path)
+        try:
+            os.chmod(path, 0o600)
+        except OSError:
+            pass
+    except OSError as exc:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise WebhookConfigError(f"Cannot write targets file: {exc}") from exc
+    return path
+
+
+def validate_target_config(cfg: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate a target definition without sending a request."""
+    if not isinstance(cfg, Mapping):
+        raise WebhookConfigError("Target config must be a JSON object")
+    value = dict(cfg)
+    _validate_url(str(value.get("url", "")))
+    method = str(value.get("method", "POST") or "POST").strip().upper()
+    if method not in {"POST", "PUT", "PATCH"}:
+        raise WebhookConfigError("Webhook method must be POST, PUT, or PATCH")
+    value["method"] = method
+
+    fmt = str(value.get("format", "json") or "json").strip().lower()
+    if fmt not in {"json", "form", "text"}:
+        raise WebhookConfigError("Target format must be one of: json, form, text")
+    value["format"] = fmt
+
+    headers = value.get("headers", {})
+    if headers is None:
+        headers = {}
+    if not isinstance(headers, dict):
+        raise WebhookConfigError("Target headers must be a JSON object")
+    value["headers"] = headers
+
+    try:
+        timeout = float(value.get("timeout", _DEFAULT_TIMEOUT) or _DEFAULT_TIMEOUT)
+    except (TypeError, ValueError) as exc:
+        raise WebhookConfigError("Target timeout must be a number") from exc
+    value["timeout"] = max(1.0, min(timeout, 120.0))
+    value["verify_tls"] = bool(value.get("verify_tls", True))
+
+    # Validate payload shape using harmless placeholder content.
+    _build_payload(value, title="test", content="test", data={})
+    return value
 
 
 def load_targets(targets_file: str = "") -> dict[str, dict[str, Any]]:
