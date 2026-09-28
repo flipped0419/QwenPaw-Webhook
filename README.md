@@ -1,4 +1,4 @@
-# QwenPaw Webhook 0.2.0
+# QwenPaw Webhook 0.2.1
 
 面向 QwenPaw 2.2.0+ 的三合一 Webhook 插件：
 
@@ -13,7 +13,7 @@ qwenpaw plugin install /path/to/qwenpaw-webhook-v0.1.0.zip
 qwenpaw plugin list
 ```
 
-插件按当前 QwenPaw `2.2.2b4` 插件 API 编写，声明兼容范围 `>=2.2.0,<3.0.0`。
+插件按当前 QwenPaw `2.2.2b4` 插件 API 编写，声明兼容范围 `>=2.2.0,<2.3.0`。
 
 ## 1. 配置目标
 
@@ -194,7 +194,7 @@ GET /api/webhook/health
 
 ## 前端配置页
 
-v0.2.0 起，插件通过 QwenPaw 前端扩展 API 注册一个 **Webhook** 管理页面。可以直接在 Console 中：
+v0.2.1 起，插件通过 QwenPaw 前端扩展 API 注册一个 **Webhook** 管理页面。可以直接在 Console 中：
 
 - 新增、编辑、删除推送目标
 - 配置 URL、Method、Format、Headers、Payload、超时和 TLS 校验
