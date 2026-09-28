@@ -139,7 +139,7 @@ function TargetEditor({ open, target, onCancel, onSaved, locale }) {
         verify_tls: values.verify_tls !== false,
       };
       setSaving(true);
-      await api(`/api/webhook/targets/${encodeURIComponent(values.alias)}`, {
+      await api(`/webhook/targets/${encodeURIComponent(values.alias)}`, {
         method: "PUT",
         body: JSON.stringify(config),
       });
@@ -246,7 +246,7 @@ function WebhookTargetsPage() {
   const load = React.useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api("/api/webhook/targets");
+      const data = await api("/webhook/targets");
       const rows = Object.entries(data.targets || {}).map(([alias, config]) => ({ alias, config }));
       rows.sort((a, b) => a.alias.localeCompare(b.alias));
       setTargets(rows);
@@ -264,7 +264,7 @@ function WebhookTargetsPage() {
 
   const remove = async (alias) => {
     try {
-      await api(`/api/webhook/targets/${encodeURIComponent(alias)}`, { method: "DELETE" });
+      await api(`/webhook/targets/${encodeURIComponent(alias)}`, { method: "DELETE" });
       message.success(t(locale, "推送目标已删除", "Webhook target deleted"));
       await load();
     } catch (error) {
@@ -275,7 +275,7 @@ function WebhookTargetsPage() {
   const testTarget = async (alias) => {
     setTesting(alias);
     try {
-      const result = await api(`/api/webhook/targets/${encodeURIComponent(alias)}/test`, {
+      const result = await api(`/webhook/targets/${encodeURIComponent(alias)}/test`, {
         method: "POST",
         body: JSON.stringify({
           title: "QwenPaw Webhook test",
