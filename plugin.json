@@ -1,7 +1,7 @@
 {
   "id": "qwenpaw-webhook",
   "name": "QwenPaw Webhook",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "channel",
   "description": "Generic webhook integration for QwenPaw: inbound HTTP trigger, send_webhook agent tool, and outbound Webhook channel.",
   "description_i18n": {
@@ -10,7 +10,8 @@
   },
   "author": "flipped0419",
   "entry": {
-    "backend": "plugin.py"
+    "backend": "plugin.py",
+    "frontend": "frontend/dist/index.js"
   },
   "dependencies": [],
   "qwenpaw_version": {
